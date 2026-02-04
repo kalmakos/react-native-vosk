@@ -33,7 +33,8 @@
     "typecheck": "tsc",
     "lint": "eslint \"**/*.{js,ts,tsx}\"",
     "clean": "del-cli android/build example/android/build example/android/app/build example/ios/build lib",
-    "prepare": "bob build && tsc --project plugin/tsconfig.json",
+    "prepare": "echo Skipping build for git install - TypeScript will compile on first use",
+    "build": "bob build && tsc --project plugin/tsconfig.json",
     "release": "release-it"
   },
   "keywords": [
