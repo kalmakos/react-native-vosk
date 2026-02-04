@@ -11,7 +11,7 @@
     "lib",
     "android",
     "ios",
-    "plugin/build",
+    "plugin",
     "cpp",
     "app.plugin.js",
     "*.podspec",
