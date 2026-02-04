@@ -1,5 +1,6 @@
 package com.vosk
 
+import android.media.MediaRecorder
 import android.util.Log
 import com.facebook.react.bridge.Promise
 import com.facebook.react.bridge.ReactApplicationContext
@@ -12,7 +13,6 @@ import org.json.JSONObject
 import org.vosk.Model
 import org.vosk.Recognizer
 import org.vosk.android.RecognitionListener
-import org.vosk.android.SpeechService
 import org.vosk.android.StorageService
 import com.vosk.NativeVoskSpec
 
@@ -21,7 +21,7 @@ class VoskModule(reactContext: ReactApplicationContext) :
         NativeVoskSpec(reactContext), RecognitionListener {
 
   private var model: Model? = null
-  private var speechService: SpeechService? = null
+  private var speechService: EnhancedSpeechService? = null
   private var context: ReactApplicationContext? = reactContext
   private var recognizer: Recognizer? = null
   private var sampleRate = 16000.0f
@@ -140,19 +140,52 @@ class VoskModule(reactContext: ReactApplicationContext) :
       return
     }
     try {
+      // Create recognizer with optional grammar
       recognizer =
               if (options != null && options.hasKey("grammar") && !options.isNull("grammar")) {
                 Recognizer(model, sampleRate, makeGrammar(options.getArray("grammar")!!))
               } else {
                 Recognizer(model, sampleRate)
               }
-      speechService = SpeechService(recognizer, sampleRate)
-      val started =
-              if (options != null && options.hasKey("timeout") && !options.isNull("timeout")) {
-                speechService?.startListening(this, options.getInt("timeout")) ?: false
-              } else {
-                speechService!!.startListening(this)
-              }
+      
+      // Parse audio source option
+      val audioSource = if (options != null && options.hasKey("audioSource") && !options.isNull("audioSource")) {
+        when (options.getString("audioSource")) {
+          "VOICE_COMMUNICATION" -> MediaRecorder.AudioSource.VOICE_COMMUNICATION
+          "MIC" -> MediaRecorder.AudioSource.MIC
+          "DEFAULT" -> MediaRecorder.AudioSource.DEFAULT
+          else -> MediaRecorder.AudioSource.VOICE_RECOGNITION
+        }
+      } else {
+        MediaRecorder.AudioSource.VOICE_RECOGNITION
+      }
+      
+      // Parse audio effects options
+      val enableAEC = options?.hasKey("enableAEC") == true && options.getBoolean("enableAEC")
+      val enableNS = options?.hasKey("enableNS") == true && options.getBoolean("enableNS")
+      val enableAGC = options?.hasKey("enableAGC") == true && options.getBoolean("enableAGC")
+      
+      // Log session ID if provided
+      val sessionId = options?.getString("id")
+      if (sessionId != null) {
+        Log.d(NAME, "Starting recognition session: $sessionId")
+      }
+      
+      // Log audio configuration
+      Log.d(NAME, "Audio config - Source: $audioSource, AEC: $enableAEC, NS: $enableNS, AGC: $enableAGC")
+      
+      // Create enhanced speech service with audio source
+      speechService = EnhancedSpeechService(recognizer!!, sampleRate, audioSource)
+      
+      // Start listening with optional timeout and audio effects
+      val timeout = if (options != null && options.hasKey("timeout") && !options.isNull("timeout")) {
+        options.getInt("timeout")
+      } else {
+        EnhancedSpeechService.NO_TIMEOUT
+      }
+      
+      val started = speechService?.startListening(this, timeout, enableAEC, enableNS, enableAGC) ?: false
+      
       if (started) {
         promise.resolve("Recognizer successfully started")
       } else {
