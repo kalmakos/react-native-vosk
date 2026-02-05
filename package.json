@@ -12,6 +12,7 @@
     "android",
     "ios",
     "plugin",
+    "scripts",
     "cpp",
     "app.plugin.js",
     "*.podspec",
@@ -33,7 +34,7 @@
     "typecheck": "tsc",
     "lint": "eslint \"**/*.{js,ts,tsx}\"",
     "clean": "del-cli android/build example/android/build example/android/app/build example/ios/build lib",
-    "prepare": "echo Skipping build for git install - TypeScript will compile on first use",
+    "prepare": "node scripts/prepare.js",
     "build": "bob build && tsc --project plugin/tsconfig.json",
     "release": "release-it"
   },
