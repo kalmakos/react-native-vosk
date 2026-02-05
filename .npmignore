@@ -1,0 +1,54 @@
+# NPM Ignore File
+# This file controls what gets included when installing from npm/GitHub
+
+# Exclude example app
+example/
+
+# Exclude test files
+__tests__/
+__fixtures__/
+__mocks__/
+*.test.js
+*.test.ts
+*.spec.js
+*.spec.ts
+
+# Exclude documentation
+docs/
+*.md
+!README.md
+
+# Exclude config files
+.eslintrc*
+.prettierrc*
+.editorconfig
+tsconfig.json
+turbo.json
+commitlint.config.js
+
+# Exclude IDE
+.vscode/
+.idea/
+
+# Exclude build artifacts (but NOT plugin/build!)
+ios/build/
+android/build/
+android/gradle/
+android/gradlew
+android/gradlew.bat
+android/local.properties
+
+# Exclude generated files
+lib/
+nitrogen/
+ios/generated/
+android/generated/
+
+# DO NOT EXCLUDE these (they are needed):
+# - plugin/
+# - plugin/build/
+# - scripts/
+# - src/
+# - android/
+# - ios/
+# - app.plugin.js
